@@ -57,6 +57,32 @@ def victoire(grille, piece):
 
 #Le code principale se trouvera ici
 
+import numpy as np
+import pygame
+import sys
+
+# Définition des couleurs
+Bleu = (0, 0, 255)
+Noir = (0, 0, 0)
+Rouge = (255, 0, 0)
+Jaune = (255, 255, 0)
+Blanc = (255, 255, 255)
+
+# Définition des constantes du jeu
+NB_LIGNES = 6  
+NB_COLONNES = 7
+DIMENSION_CASE = 100  
+TAILLE_PION = int(DIMENSION_CASE / 2 - 5)  
+
+# Dimensions de la fenêtre
+largeur_fenetre = NB_COLONNES * DIMENSION_CASE
+hauteur_fenetre = (NB_LIGNES + 1) * DIMENSION_CASE
+dimensions = (largeur_fenetre, hauteur_fenetre)
+
+# Fonction pour initialiser la grille de jeu
+def initialiser_grille():
+    return np.zeros((NB_LIGNES, NB_COLONNES))
+
 
 
 
