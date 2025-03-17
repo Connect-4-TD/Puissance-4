@@ -23,41 +23,61 @@ dimensions = (largeur_fenetre, hauteur_fenetre)
 # Fonction pour initialiser la grille de jeu
 def initialiser_grille():
     return np.zeros((NB_LIGNES, NB_COLONNES))
+# Déposer un jeton dans la grille
+def deposer_jeton(grille, ligne, colonne, num_joueur):
+    grille[ligne][colonne] = num_joueur
 
+# Vérifier si une colonne est disponible
+def colonne_disponible(grille, colonne):
+    return grille[NB_LIGNES - 1][colonne] == 0
 
+# Trouver la première ligne vide dans une colonne
+def obtenir_ligne_disponible(grille, colonne):
+    for ligne in range(NB_LIGNES):
+        if grille[ligne][colonne] == 0:
+            return ligne
+    return None
 
+# Afficher la grille dans la console (pour debug)
+def afficher_grille_console(grille):
+    print(np.flip(grille, 0))
 
+# Vérifier si un joueur a gagné
+def detecter_victoire(grille, jeton):
+    # Vérification horizontale
+    for col in range(NB_COLONNES - 3):
+        for lig in range(NB_LIGNES):
+            if (grille[lig][col] == jeton and 
+                grille[lig][col+1] == jeton and 
+                grille[lig][col+2] == jeton and 
+                grille[lig][col+3] == jeton):
+                return True
 
+    # Vérification verticale
+    for col in range(NB_COLONNES):
+        for lig in range(NB_LIGNES - 3):
+            if (grille[lig][col] == jeton and 
+                grille[lig+1][col] == jeton and 
+                grille[lig+2][col] == jeton and 
+                grille[lig+3][col] == jeton):
+                return True
 
+    # Vérification diagonale ascendante
+    for col in range(NB_COLONNES - 3):
+        for lig in range(NB_LIGNES - 3):
+            if (grille[lig][col] == jeton and 
+                grille[lig+1][col+1] == jeton and 
+                grille[lig+2][col+2] == jeton and 
+                grille[lig+3][col+3] == jeton):
+                return True
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-# 1. Implémenter une boucle de jeu pour permettre à deux joueurs de jouer à tour de rôle.
-
-
-# 2. Vérifier si la grille est pleine et terminer la partie si personne ne gagne.
-
-
-# 3. Creer un insterface console pour les tests
-
-
-# 3. Ajouter un affichage plus clair de la grille avec des symboles (ex: X pour le joueur 1, O pour le joueur 2).
-
-
-# 4. Ajouter GUI avec tkinter.
-
-
-# 5. Ajouter un IA avec l'algo min/max.
-
-
+    # Vérification diagonale descendante
+    for col in range(NB_COLONNES - 3):
+        for lig in range(3, NB_LIGNES):
+            if (grille[lig][col] == jeton and 
+                grille[lig-1][col+1] == jeton and 
+                grille[lig-2][col+2] == jeton and 
+                grille[lig-3][col+3] == jeton):
+                return True
+    
+    return False
