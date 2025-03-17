@@ -1,5 +1,8 @@
+# Pour manipuler la grille de jeu sous forme de tableau à 2 dimensions.
 import numpy as np
+# Pour l'affichage graphique et la gestion des événements (souris, clics).
 import pygame
+# Pour quitter proprement le programme.
 import sys
 import random
 
