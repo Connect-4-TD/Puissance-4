@@ -1,6 +1,7 @@
 import numpy as np
 import pygame
 import sys
+import random
 
 # Définition des couleurs
 Bleu = (0, 0, 255)
@@ -112,7 +113,7 @@ def demarrer_jeu():
     # Initialisation
     grille = initialiser_grille()
     fin_partie = False
-    joueur_actuel = 0  # Joueur 1 commence
+    joueur_actuel = random.randint(0,1)
 
     # Configuration de Pygame
     pygame.init()
