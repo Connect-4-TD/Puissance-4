@@ -157,6 +157,22 @@ def demarrer_jeu():
 
                 if fin_partie:
                     pygame.time.wait(3000)
+#Enregistrer une partie
+
+def eng_partie(var):
+pass
+
+#Charger une partie
+
+def charg_partie(var):
+eng_partie()
+pass
+
+# Creer une IA avec l'algorithmme min/max 
+def IA_diff():
+pass
+
+
 
 if __name__ == "__main__":
     demarrer_jeu()
