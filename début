@@ -42,7 +42,6 @@ def obtenir_ligne_disponible(grille, colonne):
 def afficher_grille_console(grille):
     print(np.flip(grille, 0))
 
-# Vérifier si un joueur a gagné
 def detecter_victoire(grille, jeton):
     # Vérification horizontale
     for col in range(NB_COLONNES - 3):
@@ -62,7 +61,7 @@ def detecter_victoire(grille, jeton):
                 grille[lig+3][col] == jeton):
                 return True
 
-    # Vérification diagonale ascendante
+    # Vérification diagonale de bas en haut
     for col in range(NB_COLONNES - 3):
         for lig in range(NB_LIGNES - 3):
             if (grille[lig][col] == jeton and 
@@ -71,7 +70,7 @@ def detecter_victoire(grille, jeton):
                 grille[lig+3][col+3] == jeton):
                 return True
 
-    # Vérification diagonale descendante
+    # Vérification diagonale de haut en bas
     for col in range(NB_COLONNES - 3):
         for lig in range(3, NB_LIGNES):
             if (grille[lig][col] == jeton and 
