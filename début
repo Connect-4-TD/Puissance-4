@@ -80,3 +80,30 @@ def detecter_victoire(grille, jeton):
                 return True
     
     return False
+def afficher_grille_graphique(grille, surface):
+    # Dessin du cadre de jeu
+    for col in range(NB_COLONNES):
+        for lig in range(NB_LIGNES):
+            rect_x = col * DIMENSION_CASE
+            rect_y = lig * DIMENSION_CASE + DIMENSION_CASE
+
+            # Dessiner le rectangle bleu
+            pygame.draw.rect(surface, Bleu, (rect_x, rect_y, DIMENSION_CASE, DIMENSION_CASE))
+            
+            # Dessiner le cercle noir (trou vide)
+            centre_x = rect_x + DIMENSION_CASE // 2
+            centre_y = rect_y + DIMENSION_CASE // 2
+            pygame.draw.circle(surface, Noir, (centre_x, centre_y), TAILLE_PION)
+
+    # Dessin des pions
+    for col in range(NB_COLONNES):
+        for lig in range(NB_LIGNES):
+            centre_x = col * DIMENSION_CASE + DIMENSION_CASE // 2
+            centre_y = hauteur_fenetre - (lig * DIMENSION_CASE + DIMENSION_CASE // 2)
+            
+            if grille[lig][col] == 1:  # Joueur 1 (Rouge)
+                pygame.draw.circle(surface, Rouge, (centre_x, centre_y), TAILLE_PION)
+            elif grille[lig][col] == 2:  # Joueur 2 (Jaune)
+                pygame.draw.circle(surface, Jaune, (centre_x, centre_y), TAILLE_PION)
+
+    pygame.display.update()
