@@ -360,7 +360,7 @@ def menu_principal():
 
 
 
-def demarrer_jeu(ecran=None, grille_chargee=None, joueur_chargee=None, coups_joues_charges=None, mode_jeu="jvsj"):
+def demarrer_jeu(ecran=None, grille_chargee=None, joueur_chargee=None, coups_joues_charges=None, mode_jeu= "jvsj"):
     # Initialisation
     if grille_chargee is not None:
         grille = grille_chargee
