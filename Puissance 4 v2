@@ -506,7 +506,39 @@ def charger_partie(fichier="sauvegarde.pkl"):
     except FileNotFoundError:
         print("Fichier de sauvegarde non trouvé, démarrage d'une nouvelle partie.")
         return initialiser_grille(), random.randint(0, 1), []
+def charger_partie():
+    try:
+        with open("sauvegarde.pkl", "rb") as fichier:
+            grille, joueur_actuel, coups_joues = pickle.load(fichier)
+        return grille, joueur_actuel, coups_joues
+    except FileNotFoundError:
+        print("Aucune partie sauvegardée trouvée.")
+        return initialiser_grille(), 0, []
 
+def sauvegarder_partie(grille, joueur_actuel, coups_joues):
+    with open("sauvegarde.pkl", "wb") as fichier:
+        pickle.dump((grille, joueur_actuel, coups_joues), fichier)
+def help():
+    aide = {
+        "initialiser_grille": "Crée une grille vide 6x7 pour débuter le jeu.",
+        "deposer_jeton": "Place le jeton du joueur à la position spécifiée.",
+        "colonne_disponible": "Vérifie si une colonne n'est pas pleine.",
+        "obtenir_ligne_disponible": "Retourne la première ligne vide d'une colonne.",
+        "afficher_grille_console": "Affiche la grille dans la console (utile pour debug).",
+        "detecter_victoire": "Détecte si un joueur a gagné (alignement horizontal, vertical ou diagonal).",
+        "coup_ia": "Détermine le coup de l'IA : gagne si possible, sinon bloque, sinon joue aléatoirement.",
+        "afficher_grille_graphique": "Affiche la grille avec les pions à l'écran (Pygame).",
+        "animer_chute": "Anime la chute d'un pion dans une colonne avec un effet de gravité.",
+        "creer_bouton": "Dessine un bouton interactif avec du texte centré.",
+        "afficher_menu_fin": "Affiche le menu de fin avec options : rejouer, menu principal, quitter.",
+        "menu_principal": "Affiche le menu de démarrage avec choix de mode de jeu.",
+        "demarrer_jeu": "Lance une partie en mode choisi (Joueur vs Joueur ou Joueur vs IA).",
+        "sauvegarder_partie": "Sauvegarde l'état du jeu dans un fichier local.",
+        "charger_partie": "Charge une partie depuis un fichier local.",
+        "help": "Affiche cette aide détaillée."
+    }
+    for nom, description in aide.items():
+        print(f"{nom}(): {description}")
 def annuler_dernier_coup(grille, coups_joues):
     if not coups_joues:
         return False
