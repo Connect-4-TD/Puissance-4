@@ -86,6 +86,30 @@ def detecter_victoire(grille, jeton):
                 return True
     
     return False
+def coup_ia(grille, jeton_ia):
+    """L'IA cherche à gagner ou bloquer"""
+    colonnes_valides = [col for col in range(NB_COLONNES) if colonne_disponible(grille, col)]
+    
+    # 1. Vérifie si l'IA peut gagner
+    for col in colonnes_valides:
+        grille_temp = grille.copy()
+        ligne = obtenir_ligne_disponible(grille_temp, col)
+        deposer_jeton(grille_temp, ligne, col, jeton_ia)
+        if detecter_victoire(grille_temp, jeton_ia):
+            return col
+    
+    # 2. Vérifie si le joueur peut gagner (pour bloquer)
+    jeton_joueur = 1 if jeton_ia == 2 else 2
+    for col in colonnes_valides:
+        grille_temp = grille.copy()
+        ligne = obtenir_ligne_disponible(grille_temp, col)
+        deposer_jeton(grille_temp, ligne, col, jeton_joueur)
+        if detecter_victoire(grille_temp, jeton_joueur):
+            return col
+    
+    # 3. Sinon, joue aléatoirement
+    return random.choice(colonnes_valides)
+
 
 def afficher_grille_graphique(grille, surface, pion_anim=None):
     # Effacer l'écran avec un fond noir
@@ -254,45 +278,56 @@ def afficher_menu_fin(ecran, gagnant):
                     sys.exit()
 
 def menu_principal():
-    """Affiche le menu principal du jeu"""
     pygame.init()
     ecran = pygame.display.set_mode(dimensions)
     pygame.display.set_caption('Puissance 4 TD-02')
     
-    # Polices
+    # Polices (gardez vos polices existantes)
     police_titre = pygame.font.SysFont("Arial", 60, bold=True)
     police_bouton = pygame.font.SysFont("Arial", 36)
     
-    # Tailles et positions
+    # Tailles (gardez vos valeurs existantes)
     largeur_bouton = 300
     hauteur_bouton = 80
     espacement = 40
-    
-    # Boucle du menu principal
+    centre_x = largeur_fenetre // 2 - largeur_bouton // 2
+
     while True:
         ecran.fill(Noir)
         
-        # Titre
+        # Titre (identique à votre code)
         titre = police_titre.render("PUISSANCE 4", True, Blanc)
         rect_titre = titre.get_rect(center=(largeur_fenetre // 2, 120))
         ecran.blit(titre, rect_titre)
-        
-        # Créer les boutons
-        centre_x = largeur_fenetre // 2 - largeur_bouton // 2
+
+        # Boutons (adaptation minimale)
         y_actuel = 250
         
-        bouton_jouer = creer_bouton(ecran, "Jouer", 
+        # 1. Bouton "Jouer" renommé en "Joueur vs Joueur" (Vert)
+        bouton_jvsj = creer_bouton(ecran, "Joueur vs Joueur", 
                                  (centre_x, y_actuel), 
                                  (largeur_bouton, hauteur_bouton), 
                                  Vert, Blanc, police_bouton)
         
         y_actuel += hauteur_bouton + espacement
+        
+        # 2. Nouveau bouton "Joueur vs IA" (Bleu)
+        bouton_jvsia = creer_bouton(ecran, "Joueur vs IA", 
+                                 (centre_x, y_actuel), 
+                                 (largeur_bouton, hauteur_bouton), 
+                                 Bleu, Blanc, police_bouton)
+        
+        y_actuel += hauteur_bouton + espacement
+        
+        # 3. Bouton "Charger Partie" existant (Gris)
         bouton_charger = creer_bouton(ecran, "Charger Partie", 
                                    (centre_x, y_actuel), 
                                    (largeur_bouton, hauteur_bouton), 
-                                   Bleu, Blanc, police_bouton)
+                                   Gris, Blanc, police_bouton)
         
         y_actuel += hauteur_bouton + espacement
+        
+        # 4. Bouton "Quitter" existant (Rouge)
         bouton_quitter = creer_bouton(ecran, "Quitter", 
                                    (centre_x, y_actuel), 
                                    (largeur_bouton, hauteur_bouton), 
@@ -300,27 +335,32 @@ def menu_principal():
         
         pygame.display.update()
         
-        # Gérer les événements
+        # Gestion des clics (adaptée)
         for evenement in pygame.event.get():
             if evenement.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
                 
             if evenement.type == pygame.MOUSEBUTTONDOWN:
-                position_souris = pygame.mouse.get_pos()
+                pos = pygame.mouse.get_pos()
                 
-                if bouton_jouer.collidepoint(position_souris):
-                    return "jouer", ecran
+                if bouton_jvsj.collidepoint(pos):
+                    return "jvsj", ecran  # Mode Joueur vs Joueur
                     
-                elif bouton_charger.collidepoint(position_souris):
+                elif bouton_jvsia.collidepoint(pos):
+                    return "jvsia", ecran  # Mode Joueur vs IA
+                    
+                elif bouton_charger.collidepoint(pos):
                     grille, joueur_actuel, coups_joues = charger_partie()
                     return "charger", ecran, grille, joueur_actuel, coups_joues
                     
-                elif bouton_quitter.collidepoint(position_souris):
+                elif bouton_quitter.collidepoint(pos):
                     pygame.quit()
                     sys.exit()
 
-def demarrer_jeu(ecran=None, grille_chargee=None, joueur_chargee=None, coups_joues_charges=None):
+
+
+def demarrer_jeu(ecran=None, grille_chargee=None, joueur_chargee=None, coups_joues_charges=None, mode_jeu="jvsj):
     # Initialisation
     if grille_chargee is not None:
         grille = grille_chargee
@@ -347,6 +387,21 @@ def demarrer_jeu(ecran=None, grille_chargee=None, joueur_chargee=None, coups_jou
 
     # Boucle principale du jeu
     while not fin_partie:
+        # Tour de l'IA
+        if mode_jeu == "jvsia" and joueur_actuel == 1:
+            pygame.time.delay(500)  # Petit délai pour le réalisme
+            colonne = coup_ia(grille, 2)
+            if colonne is not None:
+                ligne = obtenir_ligne_disponible(grille, colonne)
+                deposer_jeton(grille, ligne, colonne, 2)
+                coups_joues.append((ligne, colonne))
+                
+                if detecter_victoire(grille, 2):
+                    gagnant = 2
+                    fin_partie = True
+                
+                joueur_actuel = 0
+                afficher_grille_graphique(grille, ecran)
         for evenement in pygame.event.get():
             if evenement.type == pygame.QUIT:
                 pygame.quit()
@@ -460,12 +515,10 @@ def annuler_dernier_coup(grille, coups_joues):
     return True
 
 def main():
-    # Démarrer avec le menu principal
     resultat = menu_principal()
-    
-    if resultat[0] == "jouer":
+    if resultat[0] in ["jvsj", "jvsia"]:
         ecran = resultat[1]
-        demarrer_jeu(ecran)
+        demarrer_jeu(ecran, None, None, None, resultat[0])
     elif resultat[0] == "charger":
         ecran = resultat[1]
         grille = resultat[2]
