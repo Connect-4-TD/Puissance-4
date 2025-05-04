@@ -1,11 +1,9 @@
-# Pour manipuler la grille de jeu sous forme de tableau à 2 dimensions.
 import numpy as np
-# Pour l'affichage graphique et la gestion des événements (souris, clics).
 import pygame
-# Pour quitter proprement le programme.
 import sys
 import pickle
-
+import random
+import time
 
 # Définition des couleurs
 Bleu = (0, 0, 255)
@@ -28,6 +26,7 @@ dimensions = (largeur_fenetre, hauteur_fenetre)
 # Fonction pour initialiser la grille de jeu
 def initialiser_grille():
     return np.zeros((NB_LIGNES, NB_COLONNES))
+
 # Déposer un jeton dans la grille
 def deposer_jeton(grille, ligne, colonne, num_joueur):
     grille[ligne][colonne] = num_joueur
@@ -85,41 +84,94 @@ def detecter_victoire(grille, jeton):
                 return True
     
     return False
-def afficher_grille_graphique(grille, surface):
-    # Dessin du cadre de jeu
-    for col in range(NB_COLONNES):
-        for lig in range(NB_LIGNES):
-            rect_x = col * DIMENSION_CASE
-            rect_y = lig * DIMENSION_CASE + DIMENSION_CASE
 
-            # Dessiner le rectangle bleu
-            pygame.draw.rect(surface, Bleu, (rect_x, rect_y, DIMENSION_CASE, DIMENSION_CASE))
-            
-            # Dessiner le cercle noir (trou vide)
-            centre_x = rect_x + DIMENSION_CASE // 2
-            centre_y = rect_y + DIMENSION_CASE // 2
-            pygame.draw.circle(surface, Noir, (centre_x, centre_y), TAILLE_PION)
-
-    # Dessin des pions
+def afficher_grille_graphique(grille, surface, pion_anim=None):
+    # Effacer l'écran avec un fond noir
+    surface.fill(Noir)
+    
+    # Créer une surface pour le plateau (fond bleu)
+    plateau = pygame.Surface((largeur_fenetre, hauteur_fenetre - DIMENSION_CASE))
+    plateau.fill(Bleu)
+    
+    # Dessiner les trous dans le plateau (cercles noirs)
     for col in range(NB_COLONNES):
         for lig in range(NB_LIGNES):
             centre_x = col * DIMENSION_CASE + DIMENSION_CASE // 2
-            centre_y = hauteur_fenetre - (lig * DIMENSION_CASE + DIMENSION_CASE // 2)
-            
-            if grille[lig][col] == 1:  # Joueur 1 (Rouge)
-                pygame.draw.circle(surface, Rouge, (centre_x, centre_y), TAILLE_PION)
-            elif grille[lig][col] == 2:  # Joueur 2 (Jaune)
-                pygame.draw.circle(surface, Jaune, (centre_x, centre_y), TAILLE_PION)
-
+            centre_y = lig * DIMENSION_CASE + DIMENSION_CASE // 2
+            pygame.draw.circle(plateau, Noir, (centre_x, centre_y), TAILLE_PION)
+    
+    # Placer le plateau sur la surface principale (en dessous de la ligne de prévisualisation)
+    surface.blit(plateau, (0, DIMENSION_CASE))
+    
+    # Dessiner les pions déjà placés
+    for col in range(NB_COLONNES):
+        for lig in range(NB_LIGNES):
+            if grille[lig][col] != 0:  # S'il y a un pion à cette position
+                centre_x = col * DIMENSION_CASE + DIMENSION_CASE // 2
+                centre_y = hauteur_fenetre - (lig * DIMENSION_CASE + DIMENSION_CASE // 2)
+                
+                if grille[lig][col] == 1:  # Joueur 1 (Rouge)
+                    pygame.draw.circle(surface, Rouge, (centre_x, centre_y), TAILLE_PION)
+                elif grille[lig][col] == 2:  # Joueur 2 (Jaune)
+                    pygame.draw.circle(surface, Jaune, (centre_x, centre_y), TAILLE_PION)
+    
+    # Dessiner le pion en animation (s'il existe)
+    if pion_anim:
+        pygame.draw.circle(surface, pion_anim['couleur'], 
+                         (pion_anim['x'], pion_anim['y']), TAILLE_PION)
+    
     pygame.display.update()
+
+def animer_chute(ecran, grille, colonne, couleur_joueur):
+    ligne = obtenir_ligne_disponible(grille, colonne)
+    if ligne is None:
+        return
+    
+    # Position de départ (en haut de la colonne)
+    x = colonne * DIMENSION_CASE + DIMENSION_CASE // 2
+    y = DIMENSION_CASE // 2  # Position en haut
+    
+    # Position finale
+    y_final = hauteur_fenetre - (ligne * DIMENSION_CASE + DIMENSION_CASE // 2)
+    
+    # Variables pour une animation plus physique
+    vitesse = 0
+    gravite = 1.5
+    temps_debut = time.time()
+    
+    while y < y_final:
+        # Effacer la partie supérieure (pour supprimer l'ancien pion d'animation)
+        pygame.draw.rect(ecran, Noir, (0, 0, largeur_fenetre, hauteur_fenetre))
+        
+        # Calculer la nouvelle position avec gravité
+        temps_ecoule = time.time() - temps_debut
+        vitesse += gravite
+        y = min(y + vitesse, y_final)
+        
+        # Dessiner le pion en animation et la grille
+        pion_anim = {'x': x, 'y': y, 'couleur': couleur_joueur}
+        afficher_grille_graphique(grille, ecran, pion_anim)
+        
+        # Petit délai pour l'animation
+        pygame.time.delay(16)  # ~60 FPS
+        
+        # Gérer les événements pour ne pas bloquer le programme
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+                
+        # Si on approche de la fin, ralentir un peu pour éviter l'effet de saut
+        if y_final - y < 50:
+            vitesse *= 0.8
 
 def demarrer_jeu():
     # Initialisation
     grille = initialiser_grille()
     fin_partie = False
-    joueur_actuel = 0  # Joueur 1 commence
+    joueur_actuel = random.randint(0, 1)  # Choix aléatoire entre 0 (Joueur 1) et 1 (Joueur 2)
     coups_joues = []
-
+    position_souris_x = largeur_fenetre // 2  # Position initiale de la souris
 
     # Configuration de Pygame
     pygame.init()
@@ -137,59 +189,98 @@ def demarrer_jeu():
 
             # Gestion du survol de souris
             if evenement.type == pygame.MOUSEMOTION:
-                pygame.draw.rect(ecran, Noir, (0, 0, largeur_fenetre, DIMENSION_CASE))
-                position_x = evenement.pos[0]
+                position_souris_x = evenement.pos[0]  # Mettre à jour la position de la souris
                 couleur_joueur = Rouge if joueur_actuel == 0 else Jaune
-                pygame.draw.circle(ecran, couleur_joueur, (position_x, DIMENSION_CASE // 2), TAILLE_PION)
-                pygame.display.update()
+                
+                # Redessiner la partie supérieure avec le pion de prévisualisation
+                pygame.draw.rect(ecran, Noir, (0, 0, largeur_fenetre, DIMENSION_CASE))
+                pygame.draw.circle(ecran, couleur_joueur, 
+                                 (position_souris_x, DIMENSION_CASE // 2), TAILLE_PION)
+                pygame.display.update(pygame.Rect(0, 0, largeur_fenetre, DIMENSION_CASE))
 
             # Gestion des clics
             if evenement.type == pygame.MOUSEBUTTONDOWN:
                 colonne = evenement.pos[0] // DIMENSION_CASE
-                if colonne_disponible(grille, colonne):
+                if 0 <= colonne < NB_COLONNES and colonne_disponible(grille, colonne):
                     ligne = obtenir_ligne_disponible(grille, colonne)
                     num_joueur = joueur_actuel + 1
+                    couleur_joueur = Rouge if joueur_actuel == 0 else Jaune
+                    
+                    # Animation de chute
+                    animer_chute(ecran, grille, colonne, couleur_joueur)
+                    
+                    # Déposer le jeton après l'animation
                     deposer_jeton(grille, ligne, colonne, num_joueur)
                     coups_joues.append((ligne, colonne))
 
-
+                    # Vérifier s'il y a une victoire
                     if detecter_victoire(grille, num_joueur):
                         message = "Le Rouge gagne!" if num_joueur == 1 else "Le Jaune gagne!"
                         couleur = Rouge if num_joueur == 1 else Jaune
                         texte = police_texte.render(message, 1, couleur)
                         ecran.blit(texte, (40, 10))
+                        pygame.display.update()
                         fin_partie = True
 
-                    afficher_grille_console(grille)
+                    afficher_grille_console(grille)  # Pour debug
                     afficher_grille_graphique(grille, ecran)
+                    
+                    # Changement de joueur
                     joueur_actuel = (joueur_actuel + 1) % 2
+                    
+                    # Mise à jour immédiate du pion en attente
+                    pygame.draw.rect(ecran, Noir, (0, 0, largeur_fenetre, DIMENSION_CASE))
+                    couleur_joueur = Rouge if joueur_actuel == 0 else Jaune
+                    pygame.draw.circle(ecran, couleur_joueur, 
+                                     (position_souris_x, DIMENSION_CASE // 2), TAILLE_PION)
+                    pygame.display.update(pygame.Rect(0, 0, largeur_fenetre, DIMENSION_CASE))
 
                 if fin_partie:
                     pygame.time.wait(3000)
 
+            # Gestion des touches
             if evenement.type == pygame.KEYDOWN:
+                # Annuler le dernier coup (Z)
                 if evenement.key == pygame.K_z:
                     if annuler_dernier_coup(grille, coups_joues):
                         joueur_actuel = (joueur_actuel - 1) % 2
                         afficher_grille_console(grille)
                         afficher_grille_graphique(grille, ecran)
+                        # Mise à jour du pion en attente après annulation
+                        pygame.draw.rect(ecran, Noir, (0, 0, largeur_fenetre, DIMENSION_CASE))
+                        couleur_joueur = Rouge if joueur_actuel == 0 else Jaune
+                        pygame.draw.circle(ecran, couleur_joueur, 
+                                         (position_souris_x, DIMENSION_CASE // 2), TAILLE_PION)
+                        pygame.display.update()
 
+                # Sauvegarder la partie (S)
                 elif evenement.key == pygame.K_s:
                     sauvegarder_partie(grille, joueur_actuel, coups_joues)
 
+                # Charger la partie (C)
                 elif evenement.key == pygame.K_c:
                     grille, joueur_actuel, coups_joues = charger_partie()
                     afficher_grille_console(grille)
                     afficher_grille_graphique(grille, ecran)
+                    # Mise à jour du pion en attente après chargement
+                    pygame.draw.rect(ecran, Noir, (0, 0, largeur_fenetre, DIMENSION_CASE))
+                    couleur_joueur = Rouge if joueur_actuel == 0 else Jaune
+                    pygame.draw.circle(ecran, couleur_joueur, 
+                                     (position_souris_x, DIMENSION_CASE // 2), TAILLE_PION)
+                    pygame.display.update()
 
 def sauvegarder_partie(grille, joueur_actuel, coups_joues, fichier="sauvegarde.pkl"):
     with open(fichier, "wb") as f:
         pickle.dump((grille, joueur_actuel, coups_joues), f)
 
 def charger_partie(fichier="sauvegarde.pkl"):
-    with open(fichier, "rb") as f:
-        grille, joueur_actuel, coups_joues = pickle.load(f)
-    return grille, joueur_actuel, coups_joues
+    try:
+        with open(fichier, "rb") as f:
+            grille, joueur_actuel, coups_joues = pickle.load(f)
+        return grille, joueur_actuel, coups_joues
+    except FileNotFoundError:
+        print("Fichier de sauvegarde non trouvé, démarrage d'une nouvelle partie.")
+        return initialiser_grille(), random.randint(0, 1), []
 
 def annuler_dernier_coup(grille, coups_joues):
     if not coups_joues:
