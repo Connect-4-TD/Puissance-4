@@ -85,18 +85,18 @@ def coup_ia(grille, jeton_ia):
     
     
     for col in colonnes_valides:
-        grille_temp = grille.copy()
-        ligne = obtenir_ligne_disponible(grille_temp, col)
-        deposer_jeton(grille_temp, ligne, col, jeton_ia)
-        if detecter_victoire(grille_temp, jeton_ia):
+        grille_ia = grille.copy()
+        ligne = obtenir_ligne_disponible(grille_ia, col)
+        deposer_jeton(grille_ia, ligne, col, jeton_ia)
+        if detecter_victoire(grille_ia, jeton_ia):
             return col
     
     jeton_joueur = 1 if jeton_ia == 2 else 2
     for col in colonnes_valides:
-        grille_temp = grille.copy()
-        ligne = obtenir_ligne_disponible(grille_temp, col)
-        deposer_jeton(grille_temp, ligne, col, jeton_joueur)
-        if detecter_victoire(grille_temp, jeton_joueur):
+        grille_ia = grille.copy()
+        ligne = obtenir_ligne_disponible(grille_ia, col)
+        deposer_jeton(grille_ia, ligne, col, jeton_joueur)
+        if detecter_victoire(grille_ia, jeton_joueur):
             return col
     
     return random.choice(colonnes_valides)
