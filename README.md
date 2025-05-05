@@ -19,6 +19,7 @@ Joueur vs IA
 
 Chargement d'une partie sauvegardée
 
+Annulation du dernier coup (touche Z)
 
 Fonctionnalités:
 
@@ -26,7 +27,7 @@ Interface graphique interactive avec animations de chute des pions
 
 Sauvegarde et chargement de partie via le fichier sauvegarde.pkl
 
-Annulation du dernier coup (touche Z)
+
 
 Détection automatique de victoire (alignement de 4 pions)
 
