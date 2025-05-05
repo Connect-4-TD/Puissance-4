@@ -1,9 +1,9 @@
 Groupe : BIT02
 Etudiants : 
   - Thomas RUBLON
-  - Dominique
-  - Eliezer
-  - Maxime
+  - Dominique CAMARA
+  - Eliezer KANDOLO
+  - Maxime BOUCHET 
 https://github.com/Connect-4-TD/Puissance-4.git
 
 Puissance 4 : Description du Jeu
